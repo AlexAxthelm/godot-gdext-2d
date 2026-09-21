@@ -1,72 +1,48 @@
 # Tic-Tac-Toe — Rust core + Godot (gdext) build orchestration.
 #
-# Phase 0 exercises: build, check, test, clean.
-# Later-phase targets (ios/wasm/windows/export/run) are wired now but are not
-# exercised until their respective phases — see docs/ROADMAP.md.
+# Aggregate targets fan out to language-scoped groups; each granular target maps
+# 1:1 to a CI check (see .github/workflows/). Per-platform targets (ios / wasm /
+# windows) and Godot run/export targets are added with their phases — see
+# docs/ROADMAP.md.
 
-GODOT         ?= godot
-CARGO         ?= cargo
-RUST_DIR      := rust
-GODOT_DIR     := godot
-GODOT_VERSION := 4.7.1.stable.official
+check: rust-all-checks
+test: rust-test
+lint: rust-lint
+format-check: rust-format-check
+format: rust-format
+clean: rust-clean
 
-MANIFEST := $(RUST_DIR)/Cargo.toml
+# -- Rust --
+# The Cargo workspace lives under rust/, so every target runs from there. (This
+# also lets `cargo fmt`, which doesn't accept --manifest-path, just work.)
+RUST_DIR := rust
 
-.DEFAULT_GOAL := build
+rust-all-checks: rust-check rust-test rust-lint rust-format-check rust-lock-check
 
-# ── Rust: build ───────────────────────────────────────────────────────────────
-.PHONY: build build-release
-build:                       ## Debug build of the whole workspace
-	$(CARGO) build --manifest-path $(MANIFEST)
-build-release:               ## Release build of the whole workspace
-	$(CARGO) build --release --manifest-path $(MANIFEST)
+rust-check:
+	cd $(RUST_DIR) && cargo check
 
-# ── Rust: quality gates (Phase 0 milestone) ───────────────────────────────────
-.PHONY: check test
-check:                       ## cargo check + clippy (warnings are errors)
-	$(CARGO) check --manifest-path $(MANIFEST)
-	$(CARGO) clippy --manifest-path $(MANIFEST) -- -D warnings
-test:                        ## Pure-core unit tests (no Godot needed)
-	$(CARGO) test -p tictactoe-core --manifest-path $(MANIFEST)
+rust-test:
+	cd $(RUST_DIR) && cargo test -p tictactoe-core
 
-.PHONY: clean
-clean:                       ## Remove Rust build artifacts
-	$(CARGO) clean --manifest-path $(MANIFEST)
+rust-lint:
+	cd $(RUST_DIR) && cargo clippy -- -D warnings
 
-# ── iOS (Phase 3 — not yet exercised) ─────────────────────────────────────────
-.PHONY: build-ios build-ios-release
-build-ios:
-	$(CARGO) build --manifest-path $(MANIFEST) --target aarch64-apple-ios
-build-ios-release:
-	$(CARGO) build --release --manifest-path $(MANIFEST) --target aarch64-apple-ios
+rust-format:
+	cd $(RUST_DIR) && cargo fmt
 
-# ── Web / WASM (Phase 4 — needs nightly + rust-src + emsdk) ────────────────────
-.PHONY: build-wasm build-wasm-release
-build-wasm:
-	cd $(RUST_DIR)/godot && \
-	$(CARGO) +nightly build --features nothreads -Zbuild-std \
-		--target wasm32-unknown-emscripten
-build-wasm-release:
-	cd $(RUST_DIR)/godot && \
-	$(CARGO) +nightly build --release --features nothreads -Zbuild-std \
-		--target wasm32-unknown-emscripten
+rust-format-check:
+	cd $(RUST_DIR) && cargo fmt -- --check
 
-# ── Windows (Phase 5 — best effort locally; usually proven on CI) ──────────────
-.PHONY: build-windows
-build-windows:
-	$(CARGO) build --manifest-path $(MANIFEST) --target x86_64-pc-windows-gnu
+rust-lock-check:
+	cd $(RUST_DIR) && cargo check --locked
 
-# ── Godot: run / import (Phase 2 — needs a main scene) ─────────────────────────
-.PHONY: run run-editor import
-run: build                   ## Headless smoke run of the main scene
-	$(GODOT) --headless --path $(GODOT_DIR) --quit-after 2
-run-editor: build            ## Open the project in the Godot editor
-	$(GODOT) --editor --path $(GODOT_DIR) &
-import:                      ## Warm the import cache (CI/fresh clone)
-	$(GODOT) --headless --path $(GODOT_DIR) --import --quit || true
+rust-build:
+	cd $(RUST_DIR) && cargo build
 
-# ── Help ──────────────────────────────────────────────────────────────────────
-.PHONY: help
-help:                        ## List documented targets
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
-		awk 'BEGIN {FS = ":.*?## "}; {printf "  %-18s %s\n", $$1, $$2}'
+rust-clean:
+	cd $(RUST_DIR) && cargo clean
+
+.PHONY: check test lint format format-check clean \
+        rust-all-checks rust-check rust-test rust-lint \
+        rust-format rust-format-check rust-lock-check rust-build rust-clean
