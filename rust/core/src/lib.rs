@@ -63,7 +63,13 @@ impl Board {
     /// Read a single cell. Returns `None` for an empty cell.
     ///
     /// # Panics
-    /// Panics if `idx >= CELL_COUNT`.
+    /// Panics if `idx >= CELL_COUNT`. The index is currently trusted: callers
+    /// must pass `0..CELL_COUNT`. This matters because the Phase 2 Godot binding
+    /// calls in from engine callbacks, and a panic unwinding across the gdext
+    /// FFI boundary aborts rather than surfacing a recoverable error. Phase 1
+    /// should add a bounds-safe accessor (e.g. `get(idx) -> Option<Cell>`)
+    /// alongside the checked `try_play`, so untrusted input never reaches this
+    /// panicking path. See the review note in the Phase 1 block below.
     pub fn cell(&self, idx: usize) -> Cell {
         self.cells[idx]
     }
@@ -81,6 +87,8 @@ impl Board {
     // --- Phase 1 (deferred) -------------------------------------------------
     // The following belong to the full rules and will be implemented in Phase 1:
     //   - try_play(idx) -> Result<(), MoveError> with turn enforcement
+    //   - get(idx) -> Option<Cell>: bounds-safe read so untrusted (engine/UI)
+    //     indices never hit the panicking `cell()` above (review finding).
     //   - winner() -> Option<(Player, [usize; 3])>
     //   - is_draw() -> bool
     //   - GameState transitions
