@@ -1,6 +1,9 @@
 [configuration]
 entry_symbol = "gdext_rust_init"
-compatibility_minimum = 4.2
+; Match the gdext prebuilt API the extension is actually built against (4.6);
+; declaring a lower floor would let older Godot accept the manifest and then fail
+; to load the binary. Bump this if the pinned gdext moves to a newer API.
+compatibility_minimum = 4.6
 reloadable = true
 
 [libraries]
