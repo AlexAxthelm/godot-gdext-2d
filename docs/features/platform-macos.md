@@ -9,9 +9,10 @@ against the debug `libtictactoe.dylib`, with no extra toolchain beyond Rust
 stable and Godot 4.7.1.
 
 ## Build & run
-- `make build` produces `rust/target/debug/libtictactoe.dylib`.
+- `make rust-build` produces `rust/target/debug/libtictactoe.dylib`.
 - `godot/tictactoe.gdextension` maps `macos.debug`/`macos.release` to it.
-- `make run-editor` to play; `make run` for a headless smoke check.
+- Open `godot/` in the editor to play. (Godot run/smoke `make` targets arrive in
+  Phase 2 once a main scene exists.)
 
 ## Notes
 - Universal (arm64 + x86_64) packaging is a later concern; development is arm64.

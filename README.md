@@ -17,18 +17,18 @@ and the Godot project registers the extension. No gameplay yet. See
 rust/    Cargo workspace: `core` (pure rules, no engine) + `godot` (gdext binding)
 godot/   the Godot project (open this in the editor)
 docs/    architecture, roadmap, hacking guide, feature specs
-Makefile build/check/test/run orchestration — `make help`
+Makefile build/check/test orchestration (`rust-*` targets, per CI check)
 ```
 
 ## Quickstart
 
 ```sh
-make build   # debug build of the Rust workspace
-make check   # cargo check + clippy -D warnings
-make test    # pure-core unit tests (no engine)
+make check       # all Rust gates: check + test + clippy + fmt + lockfile
+make test        # pure-core unit tests (no engine)
+make rust-build  # debug build of the Rust workspace
 ```
 
-Then build once and open `godot/` in **Godot 4.7.1** to load the extension.
+Then `make rust-build` once and open `godot/` in **Godot 4.7.1** to load the extension.
 
 ## Docs
 

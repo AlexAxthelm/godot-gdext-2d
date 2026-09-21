@@ -8,34 +8,35 @@ living document — add gotchas as you hit them.
 
 - **Rust** (stable) via rustup. The workspace pins `channel = "stable"` in
   `rust/rust-toolchain.toml`.
-- **Godot 4.7.1** on `PATH` as `godot` (override with `make GODOT=/path/to/godot`).
+- **Godot 4.7.1** on `PATH` as `godot`.
 
 ## Everyday loop
 
-All commands run from the repo root via `make` (see `make help`).
+All commands run from the repo root via `make`. Aggregate targets fan out to the
+granular `rust-*` targets, and each granular target maps 1:1 to a CI check.
 
 ```sh
-make build     # debug build of the Rust workspace
-make check     # cargo check + clippy -D warnings   (Phase 0 gate)
-make test      # pure-core unit tests, no engine     (Phase 0 gate)
-make clean     # remove Rust build artifacts
+make check         # all Rust gates: check + test + lint + fmt + lockfile
+make test          # pure-core unit tests, no engine
+make lint          # clippy -D warnings
+make format        # apply rustfmt   (format-check verifies without writing)
+make rust-build    # debug build of the Rust workspace
+make clean         # remove Rust build artifacts
 ```
 
-The debug build produces `rust/target/debug/libtictactoe.dylib` (macOS), which
+`make rust-build` produces `rust/target/debug/libtictactoe.dylib` (macOS), which
 `godot/tictactoe.gdextension` points at. Build at least once before opening the
 Godot editor so the extension has a library to load.
 
 ## Godot
 
-```sh
-make run-editor   # open the project in the editor   (needs a scene — Phase 2+)
-make run          # headless smoke run                (needs a scene — Phase 2+)
-make import       # warm the import cache
-```
+The Godot project lives in `godot/`. For now, `make rust-build` then open `godot/`
+in the Godot 4.7.1 editor (or `godot --path godot`) to load the extension. The
+extension is registered via `godot/.godot/extension_list.cfg`, which **is
+committed** so a fresh clone / CI loads it on first open.
 
-The Godot project lives in `godot/`. The extension is registered via
-`godot/.godot/extension_list.cfg`, which **is committed** so a fresh clone / CI
-loads it on first open.
+Godot run/export `make` targets are added in Phase 2+ once a main scene exists
+(see `ROADMAP.md`); the Makefile currently carries only the Rust targets above.
 
 ## Per-platform toolchain notes
 

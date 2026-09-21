@@ -10,10 +10,9 @@
 
 use godot::prelude::*;
 
-// Keep the core linked and visible so the dependency is exercised even before
-// the binding node exists. Phase 2 replaces this with real usage.
-#[allow(unused_imports)]
-use tictactoe_core as core;
+// The `tictactoe-core` dependency is declared in Cargo.toml and will be used by
+// the `TicTacToe` node in Phase 2. Nothing references it yet, which is fine —
+// an unused path dependency produces no warning.
 
 struct TicTacToeExtension;
 

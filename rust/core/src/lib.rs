@@ -133,6 +133,9 @@ mod tests {
 
     #[test]
     fn default_state_is_x_to_move() {
-        assert_eq!(GameState::default(), GameState::InProgress { turn: Player::X });
+        assert_eq!(
+            GameState::default(),
+            GameState::InProgress { turn: Player::X }
+        );
     }
 }
