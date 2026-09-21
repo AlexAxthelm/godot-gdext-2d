@@ -1,0 +1,13 @@
+[package]
+name = "tictactoe-core"
+description = "Pure, engine-free tic-tac-toe game logic. No Godot dependency."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[lib]
+name = "tictactoe_core"
+
+# Intentionally NO dependencies: this crate must stay engine-free and fully
+# unit-testable with `cargo test`. See docs/DESIGN_PRINCIPLES.md.
+[dependencies]

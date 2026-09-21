@@ -1,0 +1,26 @@
+[configuration]
+entry_symbol = "gdext_rust_init"
+; Match the gdext prebuilt API the extension is actually built against (4.6);
+; declaring a lower floor would let older Godot accept the manifest and then fail
+; to load the binary. Bump this if the pinned gdext moves to a newer API.
+compatibility_minimum = 4.6
+reloadable = true
+
+[libraries]
+# Paths are relative to this Godot project dir; the Rust output lives one dir up.
+linux.debug.x86_64     = "res://../rust/target/debug/libtictactoe.so"
+linux.release.x86_64   = "res://../rust/target/release/libtictactoe.so"
+
+macos.debug            = "res://../rust/target/debug/libtictactoe.dylib"
+macos.release          = "res://../rust/target/release/libtictactoe.dylib"
+
+windows.debug.x86_64   = "res://../rust/target/debug/tictactoe.dll"
+windows.release.x86_64 = "res://../rust/target/release/tictactoe.dll"
+
+; Web — single-threaded (nothreads) build; no SharedArrayBuffer required.
+web.debug.wasm32       = "res://../rust/target/wasm32-unknown-emscripten/debug/tictactoe.wasm"
+web.release.wasm32     = "res://../rust/target/wasm32-unknown-emscripten/release/tictactoe.wasm"
+
+; iOS — arm64 device static library (no simulator slice in Godot templates).
+ios.debug              = "res://../rust/target/aarch64-apple-ios/debug/libtictactoe.a"
+ios.release            = "res://../rust/target/aarch64-apple-ios/release/libtictactoe.a"

@@ -1,0 +1,11 @@
+# Linker flags required to build gdext as an Emscripten SIDE_MODULE for the web
+# export. Recorded now (Phase 0) so the Web phase doesn't have to rediscover them.
+# These are load-bearing and copied verbatim from the proven previous project.
+[target.wasm32-unknown-emscripten]
+rustflags = [
+    "-C", "link-args=-sSIDE_MODULE=2",
+    "-C", "llvm-args=-enable-emscripten-cxx-exceptions=0",
+    "-Z", "default-visibility=hidden",
+    "-Z", "link-native-libraries=no",
+    "-Z", "emscripten-wasm-eh=false",
+]
