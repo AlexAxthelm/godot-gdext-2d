@@ -11,8 +11,11 @@ The core is structured to accept this without a refactor.
 - A pure `best_move(&Board, Player) -> usize` in `tictactoe-core`, fully
   unit-testable. v1 stub picks the first empty (or random) cell; the real
   implementation is **minimax** (optionally depth-limited for "easy" difficulty).
-- If randomness is needed, the core takes an injected `&mut impl FnMut() -> f32`
-  rather than depending on the `rand` crate (see `DESIGN_PRINCIPLES.md`).
+- Where randomness is needed (tie-breaking, "easy" difficulty), use a **seedable**
+  generator — a vetted small crate such as `rand_pcg` or `fastrand`, seeded
+  explicitly so tests and any future replays are deterministic. Take the seed (or
+  the RNG) as a parameter rather than reaching for OS entropy inside the core.
+  See dependency guidance in `DESIGN_PRINCIPLES.md`.
 - The scene gets a mode toggle (hot-seat vs. vs-robot) and, for robot turns,
   asks the core for a move instead of waiting on input.
 

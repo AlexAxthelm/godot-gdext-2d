@@ -31,10 +31,32 @@ The core exposes seams for planned features before they exist — e.g. an AI
 reshaping an API. But we don't implement speculative features ahead of their
 phase.
 
-## 5. Tiny dependency tree
-Favor `std` and hand-rolled simplicity over pulling crates into the core (the
-previous project hand-rolled its RNG to stay WASM-friendly). Fewer deps means
-faster builds, smaller wasm, and fewer cross-platform surprises.
+## 5. Depend deliberately, not reflexively
+Prefer a well-maintained library over hand-rolling anything non-trivial —
+hand-rolled math, parsers, and algorithms are a classic source of subtle bugs
+(an LCG with poor constants, an off-by-one in a tokenizer). A small dependency
+tree is not itself a goal, and dependency *count* is not what breaks WASM.
+
+What breaks WASM is a specific, short list of *capabilities*. Vet each new
+dependency against it before adding — reject or feature-gate the ones that fail:
+
+- **Entropy** — anything pulling `getrandom` (e.g. `rand`'s default features).
+  Fine on our `wasm32-unknown-emscripten` target, but a linker error on
+  `wasm32-unknown-unknown` without the `js` feature.
+- **Thread spawning** — we build with `experimental-wasm-nothreads`, so
+  `std::thread::spawn`, `rayon`, etc. will not work. (Atomic *types* are fine
+  single-threaded; it's spawning that dies.)
+- **C deps / native `build.rs`** — crates that compile C or link system
+  libraries are painful-to-impossible to cross-compile under emscripten.
+- **Time / I/O** — `Instant`/`SystemTime` can panic on wasm; fs and net are
+  environment-specific.
+- **Shipped size** — every dep adds to the `.wasm` the browser downloads. A real
+  but usually modest cost.
+
+Control something yourself only when there's a *design* reason — e.g. a seedable,
+deterministic RNG for reproducible tests, replays, or future netcode — not merely
+to keep the dependency count down. In that RNG case the answer is a vetted small
+crate (`rand_pcg`, `fastrand`) seeded manually, not a hand-rolled generator.
 
 ## 6. The build pipeline is a first-class deliverable
 Tic-tac-toe is a pretext; a repeatable, documented, multi-platform build is the
