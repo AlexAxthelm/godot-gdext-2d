@@ -21,10 +21,13 @@ The board is the 3x3 grid and the rules that govern it. It lives entirely in
   highlight it).
 
 ## Status
-Phase 0 ships the type skeleton (`Board`, `Player`, `Cell`, `GameState`).
-Full move/win/draw logic is Phase 1 — see `ROADMAP.md`.
+Phase 1 (done) implements the full rules in `tictactoe-core`: `try_play(idx)`
+with turn enforcement and `MoveError` rejection, `winner()`, `is_draw()`, and
+`state()`. Whose turn it is is derived from cell parity rather than stored. See
+`ROADMAP.md`.
 
-Note: the Phase 0 `Board::cell(idx)` reads panic on an out-of-range index. Phase 1
-adds a bounds-safe `get(idx) -> Option<Cell>` so indices coming from the engine /
-UI can't reach that panicking path (a panic across the gdext FFI boundary aborts
-rather than recovering).
+Note: `Board::cell(idx)` still panics on an out-of-range index — it's the trusted
+fast path. Indices coming from the engine / UI go through the bounds-safe
+`get(idx) -> Option<Cell>` (outer `None` = out of range) so they can't reach that
+panicking path (a panic across the gdext FFI boundary aborts rather than
+recovering).
