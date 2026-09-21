@@ -1,0 +1,26 @@
+[package]
+name = "tictactoe-godot"
+description = "Godot (gdext) binding for the tic-tac-toe core. Thin translation layer only."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[lib]
+name = "tictactoe"
+# cdylib -> .so/.dylib/.dll/.wasm for desktop + web; staticlib -> .a for iOS.
+crate-type = ["cdylib", "staticlib"]
+
+[features]
+# Enable for a single-threaded wasm build (broadest browser/host compatibility,
+# no SharedArrayBuffer required). Used by `make build-wasm`.
+nothreads = [
+    "godot/experimental-wasm",
+    "godot/experimental-wasm-nothreads",
+    "godot/lazy-function-tables",
+]
+
+[dependencies]
+# gdext is pinned via git (crates.io releases lag the Godot 4.7 API). The exact
+# commit is recorded in the committed Cargo.lock for reproducibility.
+godot = { git = "https://github.com/godot-rust/gdext", branch = "master" }
+tictactoe-core = { path = "../core" }
