@@ -14,5 +14,10 @@ jobs:
         with:
           components: clippy
 
+      - name: Cache Rust build
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: rust
+
       - name: Run lint
         run: make rust-lint
