@@ -147,9 +147,10 @@ impl Board {
 
     /// The winner and the line they completed, or `None` if nobody has won.
     ///
-    /// Returns the first winning line found (there can be at most one on a board
-    /// reached through legal play). The line indices are returned so the UI can
-    /// highlight the winning three cells.
+    /// Returns the first matching line in `WIN_LINES` order. A single move can
+    /// complete two lines at once (a center move finishing both diagonals), in
+    /// which case only that first line is reported — enough for the UI to
+    /// highlight a winning three, and the winner is the same either way.
     pub fn winner(&self) -> Option<(Player, [usize; 3])> {
         for line in WIN_LINES {
             if let Some(player) = self.cells[line[0]] {
@@ -169,11 +170,13 @@ impl Board {
     /// The high-level status of the game, computed from the board.
     ///
     /// A win takes precedence over a full board, so this checks `winner()` first,
-    /// then a draw, then reports the game in progress with the current turn.
+    /// then a draw, then reports the game in progress with the current turn. The
+    /// draw branch tests board-fullness inline rather than calling `is_draw()`,
+    /// which would rescan `winner()` a second time.
     pub fn state(&self) -> GameState {
         if let Some((winner, line)) = self.winner() {
             GameState::Won { winner, line }
-        } else if self.is_draw() {
+        } else if self.cells.iter().all(|c| c.is_some()) {
             GameState::Draw
         } else {
             GameState::InProgress {
@@ -331,8 +334,7 @@ mod tests {
 
     #[test]
     fn o_can_win() {
-        // X: 0,1 then blocked; O completes the middle column 1? No — build a
-        // clean O column win on 2,5,8. Sequence: X0 O2 X1 O5 X3 O8 -> O wins.
+        // O wins the right column [2,5,8]. Sequence: X0 O2 X1 O5 X3 O8.
         let board = play(&[0, 2, 1, 5, 3, 8]);
         assert_eq!(board.winner(), Some((Player::O, [2, 5, 8])));
         assert_eq!(
