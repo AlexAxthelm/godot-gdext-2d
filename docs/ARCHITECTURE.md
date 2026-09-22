@@ -82,6 +82,18 @@ online with their phases.
 
 ## Current state
 
-**Phase 0 complete: skeleton + docs.** The workspace compiles, the core's tests
-pass, and the Godot project registers the extension. No gameplay yet — see
-`ROADMAP.md` for what lands next.
+**Phase 2 complete: first playable build.** A playable two-player hot-seat game
+runs in the editor and via `make run` on macOS. The `TicTacToe` node
+(`rust/godot/src/node.rs`) owns a `core::Board` and emits `cell_changed` /
+`turn_changed` / `game_over`; a thin, fully-typed `main.gd` view reacts to those
+signals and holds no rules. A headless GdUnit4 smoke test (`make smoke`) covers
+the loop. See `ROADMAP.md` for what lands next.
+
+### The GDScript view & its safety net
+
+The scene's `main.gd` is deliberately thin — it forwards input and repaints on
+signals, nothing more. Because GDScript is not compiled like Rust, that seam is
+guarded by: static typing with warnings-as-errors (`godot/project.godot`), a
+`--check-only` parse gate (`make gd-check`), `gdlint`/`gdformat` via gdtoolkit,
+and the GdUnit4 scene smoke test — which is the real net for broken node
+references or renamed signals. Keeping the view thin keeps that surface small.

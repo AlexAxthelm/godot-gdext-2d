@@ -24,4 +24,9 @@ The `TicTacToe` node reads these actions and calls the core; the core only ever
 receives "place at cell N."
 
 ## Status
-Phase 2 (see `ROADMAP.md`).
+Phase 2 (done). The `cursor_*`, `place`, and `reset` actions are defined in
+`godot/project.godot` with keyboard **and** gamepad events. `main.gd` handles them
+in `_input` — ahead of Godot's built-in `ui_*` focus navigation and a focused
+button's own `ui_accept` — so these actions are the single source of grid control;
+the focused cell's focus ring is the selection cursor. Mouse and touch arrive
+independently as button `pressed` signals. See `ROADMAP.md`.

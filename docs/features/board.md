@@ -30,4 +30,5 @@ Note: `Board::cell(idx)` still panics on an out-of-range index — it's the trus
 fast path. Indices coming from the engine / UI go through the bounds-safe
 `get(idx) -> Option<Cell>` (outer `None` = out of range) so they can't reach that
 panicking path (a panic across the gdext FFI boundary aborts rather than
-recovering).
+recovering). The Phase 2 `TicTacToe` node does exactly this — its `play(idx)`
+routes engine indices through `try_play`/`get`, never `cell`.
