@@ -1,0 +1,79 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://main.gd" id="1_main"]
+
+[node name="Main" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_main")
+
+[node name="Center" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Layout" type="VBoxContainer" parent="Center"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Status" type="Label" parent="Center/Layout"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "X's turn"
+horizontal_alignment = 1
+
+[node name="Grid" type="GridContainer" parent="Center/Layout"]
+unique_name_in_owner = true
+layout_mode = 2
+columns = 3
+
+[node name="Cell0" type="Button" parent="Center/Layout/Grid"]
+custom_minimum_size = Vector2(120, 120)
+layout_mode = 2
+
+[node name="Cell1" type="Button" parent="Center/Layout/Grid"]
+custom_minimum_size = Vector2(120, 120)
+layout_mode = 2
+
+[node name="Cell2" type="Button" parent="Center/Layout/Grid"]
+custom_minimum_size = Vector2(120, 120)
+layout_mode = 2
+
+[node name="Cell3" type="Button" parent="Center/Layout/Grid"]
+custom_minimum_size = Vector2(120, 120)
+layout_mode = 2
+
+[node name="Cell4" type="Button" parent="Center/Layout/Grid"]
+custom_minimum_size = Vector2(120, 120)
+layout_mode = 2
+
+[node name="Cell5" type="Button" parent="Center/Layout/Grid"]
+custom_minimum_size = Vector2(120, 120)
+layout_mode = 2
+
+[node name="Cell6" type="Button" parent="Center/Layout/Grid"]
+custom_minimum_size = Vector2(120, 120)
+layout_mode = 2
+
+[node name="Cell7" type="Button" parent="Center/Layout/Grid"]
+custom_minimum_size = Vector2(120, 120)
+layout_mode = 2
+
+[node name="Cell8" type="Button" parent="Center/Layout/Grid"]
+custom_minimum_size = Vector2(120, 120)
+layout_mode = 2
+
+[node name="Reset" type="Button" parent="Center/Layout"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Reset"
+
+[node name="Board" type="TicTacToe" parent="."]
+unique_name_in_owner = true

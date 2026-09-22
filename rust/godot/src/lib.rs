@@ -5,14 +5,14 @@
 //! Godot input/UI events into calls on `tictactoe_core` and emits signals back
 //! to the scene. Game *rules* never live here — they live in `tictactoe-core`.
 //!
-//! Phase 0 status: entry point only. The `TicTacToe` node, the `main.tscn` grid,
-//! InputMap wiring, and signals are Phase 2 (see `docs/ROADMAP.md`).
+//! Phase 2 status: the `#[gdextension]` entry point plus the [`node::TicTacToe`]
+//! node — the translator that turns engine calls into `tictactoe_core` moves and
+//! emits signals back to the scene. The `main.tscn` grid and InputMap wiring live
+//! on the Godot side (see `docs/ROADMAP.md`).
 
 use godot::prelude::*;
 
-// The `tictactoe-core` dependency is declared in Cargo.toml and will be used by
-// the `TicTacToe` node in Phase 2. Nothing references it yet, which is fine —
-// an unused path dependency produces no warning.
+mod node;
 
 struct TicTacToeExtension;
 
