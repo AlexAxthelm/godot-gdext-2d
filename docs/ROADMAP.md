@@ -18,10 +18,14 @@ Milestone: `make check` and `make test` pass; opening `godot/` in Godot 4.7.1
 registers the extension without error.
 
 ---
-## Phase 1 — Pure core rules
+## Phase 1 — Pure core rules  *(done)*
 The complete, engine-free game.
-- `Board::try_play(idx)` with turn enforcement and illegal-move rejection.
-- `winner() -> Option<(Player, [usize; 3])>`, `is_draw()`, `GameState` transitions.
+- `Board::try_play(idx)` with turn enforcement and illegal-move rejection
+  (`MoveError::{OutOfBounds, CellOccupied, GameOver}`).
+- Bounds-safe `Board::get(idx) -> Option<Cell>` so engine/UI indices never reach
+  the panicking `cell()` (Phase 0 review finding).
+- `winner() -> Option<(Player, [usize; 3])>`, `is_draw()`, `Board::state()`
+  computing `GameState` (turn derived from cell parity, not stored).
 - Exhaustive unit tests: all 8 win lines, draws, illegal moves, alternation.
 
 Milestone: `make test` covers the full rules; zero Godot dependency in `core`.
