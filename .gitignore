@@ -32,5 +32,11 @@ godot/export/
 # godot/.godot/extension_list.cfg  ← Godot needs this to load the extension
 #                                    on first open (fresh clone, CI, etc.)
 
+# ── Godot — GdUnit4 test framework (fetched, not vendored) ────────────────────
+# Pulled in on demand by `make gd-test-deps`; pinned in the Makefile.
+godot/addons/gdUnit4/
+# GdUnit4 test run reports (HTML/XML), regenerated each `make smoke`.
+godot/reports/
+
 # ── macOS ─────────────────────────────────────────────────────────────────────
 .DS_Store
