@@ -8,7 +8,6 @@ extends Control
 ## view is what turns them into user-facing text and highlights.
 
 var _cells: Array[Button] = []
-var _game_over: bool = false
 var _selected: int = 0  # cell the keyboard/gamepad cursor is on
 
 @onready var _board: TicTacToe = %Board
@@ -31,8 +30,9 @@ func _ready() -> void:
 
 
 ## Handle the abstract input actions here in `_input` — ahead of the GUI's
-## built-in ui_* focus navigation and a focused Button's own ui_accept — so the
-## cursor_*/place/reset actions are the single source of grid control. Mouse and
+## built-in ui_* focus navigation — so `cursor_*` drives the grid cursor and
+## `reset` always restarts. `place` activates only the focused cell and otherwise
+## falls through to the focused control (see `_place_on_focused_cell`). Mouse and
 ## touch are untouched (they arrive as button presses, not these actions).
 func _input(event: InputEvent) -> void:
 	if event.is_action_pressed("reset"):
@@ -40,8 +40,7 @@ func _input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 		return
 	if event.is_action_pressed("place"):
-		_on_cell_pressed(_selected)
-		get_viewport().set_input_as_handled()
+		_place_on_focused_cell()
 	elif event.is_action_pressed("cursor_up"):
 		_move_selection(0, -1)
 	elif event.is_action_pressed("cursor_down"):
@@ -62,13 +61,26 @@ func _move_selection(dx: int, dy: int) -> void:
 	get_viewport().set_input_as_handled()
 
 
+## `place` activates the grid cell that currently holds focus. If focus is on
+## another control (the Reset button) or nowhere, do nothing and let the event
+## reach the GUI, so the focused control activates itself — otherwise Enter on
+## Reset would place a mark instead of resetting.
+func _place_on_focused_cell() -> void:
+	var focused := get_viewport().gui_get_focus_owner()
+	for i: int in _cells.size():
+		if _cells[i] == focused:
+			_on_cell_pressed(i)
+			get_viewport().set_input_as_handled()
+			return
+
+
 func _on_cell_focused(idx: int) -> void:
 	_selected = idx  # keep the cursor in sync when focus moves (e.g. by mouse)
 
 
 func _on_cell_pressed(idx: int) -> void:
-	if _game_over:
-		return
+	# No game-over guard needed: the core rejects moves once the game is decided
+	# (play returns false and emits nothing), so a late press is already a no-op.
 	_board.play(idx)
 
 
@@ -82,12 +94,10 @@ func _on_cell_changed(idx: int, mark: String) -> void:
 
 
 func _on_turn_changed(turn: String) -> void:
-	_game_over = false
 	_status.text = "%s's turn" % turn
 
 
 func _on_game_over(outcome: String, line: PackedInt32Array) -> void:
-	_game_over = true
 	if outcome == "draw":
 		_status.text = "Draw"
 	else:
