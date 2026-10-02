@@ -68,12 +68,20 @@ run: rust-build
 # honours the warnings-as-errors in project.godot), lint, and format-check.
 gd-all-checks: gd-check gd-lint gd-format-check
 
-# `--check-only` parses + type-checks one script and quits; loop over ours so a
-# typo or unsafe access fails the build. Needs Godot on PATH (see HACKING.md).
-gd-check:
+# `--check-only` parses + type-checks one script and quits. Godot 4.7.1 exits 0
+# even on parse/type errors, so we scan its output for error markers and fail the
+# target ourselves. Needs Godot on PATH (see HACKING.md).
+# Depends on rust-build: the scripts reference the `TicTacToe` global class, which
+# only registers once the extension dylib the .gdextension points at exists — so
+# on a fresh checkout the type would be unresolved without building it first.
+gd-check: rust-build
 	@for f in $(GD_CHECK_SOURCES); do \
 		echo "check-only $$f"; \
-		godot --headless --path $(GODOT_DIR) --check-only -s "res://$${f#$(GODOT_DIR)/}" || exit 1; \
+		out=$$(godot --headless --path $(GODOT_DIR) --check-only -s "res://$${f#$(GODOT_DIR)/}" 2>&1); \
+		echo "$$out"; \
+		if echo "$$out" | grep -qE 'SCRIPT ERROR|Parse Error|Failed to load script'; then \
+			echo "gd-check: $$f failed to parse/type-check" >&2; exit 1; \
+		fi; \
 	done
 
 # gdlint / gdformat come from gdtoolkit (see HACKING.md for install).
