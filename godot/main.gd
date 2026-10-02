@@ -32,6 +32,7 @@ func _ready() -> void:
 	_board.turn_changed.connect(_on_turn_changed)
 	_board.game_over.connect(_on_game_over)
 	_board.reset()  # broadcast the initial state (turn_changed → "X")
+	_cells[_selected].grab_focus()  # a focused cell so the first `place` has a target
 
 
 ## Handle the abstract input actions here in `_input` — ahead of the GUI's
