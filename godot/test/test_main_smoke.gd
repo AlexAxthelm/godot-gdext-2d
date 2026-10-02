@@ -56,3 +56,51 @@ func test_reset_clears_board() -> void:
 	reset_button.pressed.emit()
 	assert_str((cells[0] as Button).text).is_equal("")
 	assert_str(status.text).is_equal("X's turn")
+
+
+# --- Input layer (cursor / place) ------------------------------------------
+# These exercise the view's input handlers directly (InputEvents don't transport
+# in headless mode), so they call the handlers and manipulate focus themselves.
+
+
+func test_starts_with_a_cell_focused() -> void:
+	var runner := scene_runner(MAIN_SCENE)
+	var scene := runner.scene()
+	var cells: Array = scene.get("_cells")
+	assert_bool(scene.get_viewport().gui_get_focus_owner() == cells[0]).is_true()
+
+
+func test_cursor_navigation_moves_and_clamps() -> void:
+	var runner := scene_runner(MAIN_SCENE)
+	var scene := runner.scene()
+	scene.call("_move_selection", 1, 0)  # right from 0 → 1
+	assert_int(scene.get("_selected")).is_equal(1)
+	scene.call("_move_selection", 0, 1)  # down → 4
+	assert_int(scene.get("_selected")).is_equal(4)
+	scene.call("_move_selection", -1, 0)  # left → 3
+	scene.call("_move_selection", 0, -1)  # up → 0
+	assert_int(scene.get("_selected")).is_equal(0)
+	scene.call("_move_selection", -1, 0)  # left at edge → clamped
+	scene.call("_move_selection", 0, -1)  # up at edge → clamped
+	assert_int(scene.get("_selected")).is_equal(0)
+
+
+func test_place_activates_the_focused_cell() -> void:
+	var runner := scene_runner(MAIN_SCENE)
+	var scene := runner.scene()
+	var cells: Array = scene.get("_cells")
+	(cells[4] as Button).grab_focus()
+	scene.call("_place_on_focused_cell")
+	assert_str((cells[4] as Button).text).is_equal("X")
+
+
+func test_place_ignores_non_cell_focus() -> void:
+	# Regression for the Enter-on-Reset bug: place while a non-cell (the Reset
+	# button) holds focus must not drop a mark on the grid.
+	var runner := scene_runner(MAIN_SCENE)
+	var scene := runner.scene()
+	var cells: Array = scene.get("_cells")
+	(scene.get_node("%Reset") as Button).grab_focus()
+	scene.call("_place_on_focused_cell")
+	for i: int in cells.size():
+		assert_str((cells[i] as Button).text).is_equal("")
