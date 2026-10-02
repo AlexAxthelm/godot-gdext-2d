@@ -84,29 +84,6 @@ impl TicTacToe {
         self.emit_state();
     }
 
-    /// The player to move (`"X"`/`"O"`), or `""` if the game is over. For the
-    /// view's initial paint without waiting on a signal.
-    #[func]
-    fn current_turn(&self) -> GString {
-        match self.board.state() {
-            GameState::InProgress { turn } => GString::from(mark_str(turn)),
-            _ => GString::new(),
-        }
-    }
-
-    /// The mark in `idx` (`"X"`/`"O"`), or `""` if empty or out of range. Lets
-    /// the view repaint a cell from scratch.
-    #[func]
-    fn cell_mark(&self, idx: i64) -> GString {
-        if idx < 0 {
-            return GString::new();
-        }
-        match self.board.get(idx as usize).flatten() {
-            Some(player) => GString::from(mark_str(player)),
-            None => GString::new(),
-        }
-    }
-
     /// Emit the signal that describes the board's current high-level state:
     /// `turn_changed` while in progress, `game_over` once decided.
     fn emit_state(&mut self) {
