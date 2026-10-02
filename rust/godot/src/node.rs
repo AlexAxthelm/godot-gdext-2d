@@ -56,13 +56,15 @@ impl TicTacToe {
     ///
     /// The index arrives from the engine, so it goes through the core's
     /// bounds-safe `try_play` — never a path that could panic across the FFI
-    /// boundary (a panic there aborts rather than unwinds).
+    /// boundary (a panic there aborts rather than unwinds). The `i64`→`usize`
+    /// conversion is checked rather than an `as` cast: that rejects negatives and,
+    /// on 32-bit targets like wasm32, any value a cast would truncate into an
+    /// in-range index and wrongly accept.
     #[func]
     fn play(&mut self, idx: i64) -> bool {
-        if idx < 0 {
+        let Ok(idx) = usize::try_from(idx) else {
             return false;
-        }
-        let idx = idx as usize;
+        };
         if self.board.try_play(idx).is_err() {
             return false;
         }
