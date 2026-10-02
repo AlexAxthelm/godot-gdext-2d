@@ -17,8 +17,13 @@ var _selected: int = 0  # cell the keyboard/gamepad cursor is on
 
 
 func _ready() -> void:
+	# The grid's Button children, in order, are cells 0..8. Skip any non-Button
+	# child so a future spacer/label can't become a null entry; assert the count
+	# so a miswired scene fails loudly rather than mis-indexing later.
 	for child: Node in _grid.get_children():
-		_cells.append(child as Button)
+		if child is Button:
+			_cells.append(child as Button)
+	assert(_cells.size() == 9, "expected 9 cell buttons in %Grid")
 	for i: int in _cells.size():
 		_cells[i].pressed.connect(_on_cell_pressed.bind(i))
 		_cells[i].focus_entered.connect(_on_cell_focused.bind(i))
