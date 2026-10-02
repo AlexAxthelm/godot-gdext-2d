@@ -98,16 +98,21 @@ gd-format-check:
 
 # Fetch the pinned GdUnit4 test framework into the (gitignored) addons dir if it
 # isn't already there. Kept out of the repo per the "pin, don't vendor" approach.
+# Guard on the runner file (not just the directory) and only replace an existing
+# install after a successful clone, so an interrupted or partial fetch self-heals
+# on the next run instead of leaving a broken addon that later targets skip.
 gd-test-deps:
-	@if [ -d "$(GDUNIT_DIR)" ]; then \
+	@if [ -f "$(GDUNIT_DIR)/bin/GdUnitCmdTool.gd" ]; then \
 		echo "GdUnit4 present ($(GDUNIT_DIR))"; \
 	else \
+		set -e; \
 		echo "Fetching GdUnit4 $(GDUNIT_VERSION)…"; \
 		tmp=$$(mktemp -d); \
+		trap 'rm -rf "$$tmp"' EXIT; \
 		git clone --depth 1 --branch $(GDUNIT_VERSION) https://github.com/MikeSchulze/gdUnit4.git "$$tmp"; \
-		mkdir -p $(GODOT_DIR)/addons; \
+		rm -rf "$(GDUNIT_DIR)"; \
+		mkdir -p "$(GODOT_DIR)/addons"; \
 		cp -R "$$tmp/addons/gdUnit4" "$(GDUNIT_DIR)"; \
-		rm -rf "$$tmp"; \
 		echo "Installed GdUnit4 → $(GDUNIT_DIR)"; \
 	fi
 
