@@ -104,3 +104,18 @@ func test_place_ignores_non_cell_focus() -> void:
 	scene.call("_place_on_focused_cell")
 	for i: int in cells.size():
 		assert_str((cells[i] as Button).text).is_equal("")
+
+
+func test_play_rejects_out_of_range_indices() -> void:
+	# Guards the bounds contract: a negative or oversized index is rejected and
+	# leaves the board untouched (an `as usize` cast would truncate on wasm32).
+	var runner := scene_runner(MAIN_SCENE)
+	var scene := runner.scene()
+	var board: TicTacToe = scene.get_node("%Board")
+	var status: Label = scene.get_node("%Status")
+	var cells: Array = scene.get("_cells")
+	assert_bool(board.play(-1)).is_false()
+	assert_bool(board.play(999)).is_false()
+	for i: int in cells.size():
+		assert_str((cells[i] as Button).text).is_equal("")
+	assert_str(status.text).is_equal("X's turn")
