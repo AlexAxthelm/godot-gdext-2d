@@ -17,14 +17,18 @@ config/icon="res://assets/icon.svg"
 
 [debug]
 
-; Static-typing guardrails for the thin GDScript view: treat the type-safety
-; warnings as errors so a mistyped call fails `make gd-check` (godot
-; --check-only) instead of at runtime. See docs/HACKING.md.
+; Static-typing guardrails for the thin GDScript view. The unsafe-access and
+; untyped-declaration warnings are promoted to errors (2) so a mistyped or
+; untyped call fails `make gd-check` (godot --check-only) instead of surfacing at
+; runtime. Type inference (`:=`) and explicit `as` casts are idiomatic typed
+; GDScript here, so those warnings are intentionally disabled (0) rather than left
+; as non-fatal warnings. return_value_discarded is off so `.connect()` (which
+; returns an Error we ignore) doesn't warn. See docs/HACKING.md.
 gdscript/warnings/untyped_declaration=2
-gdscript/warnings/inferred_declaration=1
+gdscript/warnings/inferred_declaration=0
 gdscript/warnings/unsafe_method_access=2
 gdscript/warnings/unsafe_property_access=2
-gdscript/warnings/unsafe_cast=1
+gdscript/warnings/unsafe_cast=0
 gdscript/warnings/unsafe_call_argument=2
 gdscript/warnings/return_value_discarded=0
 
