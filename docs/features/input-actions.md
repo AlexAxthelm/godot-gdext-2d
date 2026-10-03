@@ -23,10 +23,18 @@ single device. This keeps the core input-agnostic and makes multi-platform
 The `TicTacToe` node reads these actions and calls the core; the core only ever
 receives "place at cell N."
 
+## Focus & the Reset button
+The keyboard/gamepad cursor is the focused control's focus ring. The Reset button
+sits just below the grid: `cursor_down` from any bottom-row cell focuses it, and
+`cursor_up` returns to the cell you left. On game over the Reset button is focused
+automatically, so `place` immediately starts a new game.
+
 ## Status
 Phase 2 (done). The `cursor_*`, `place`, and `reset` actions are defined in
-`godot/project.godot` with keyboard **and** gamepad events. `main.gd` handles them
-in `_input` — ahead of Godot's built-in `ui_*` focus navigation and a focused
-button's own `ui_accept` — so these actions are the single source of grid control;
-the focused cell's focus ring is the selection cursor. Mouse and touch arrive
-independently as button `pressed` signals. See `ROADMAP.md`.
+`godot/project.godot` with keyboard **and** gamepad events (incl. left-stick
+motion). `place` and `reset` are handled per-event in `main.gd`'s `_input`;
+`cursor_*` movement is polled and debounced in `_process` (immediate first step,
+then a fixed cadence while held) so a held key/stick/D-pad steps across the grid
+without spamming. `_input` still swallows `cursor_*` events to pre-empt Godot's
+built-in `ui_*` navigation. Mouse and touch arrive independently as button
+`pressed` signals. See `ROADMAP.md`.

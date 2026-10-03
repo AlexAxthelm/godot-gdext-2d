@@ -130,3 +130,26 @@ func test_full_board_with_no_winner_is_a_draw() -> void:
 	for idx: int in [0, 1, 2, 4, 3, 5, 7, 6, 8]:
 		_press(cells, idx)
 	assert_str(status.text).is_equal("Draw")
+
+
+func test_down_from_bottom_row_reaches_reset_and_back() -> void:
+	var runner := scene_runner(MAIN_SCENE)
+	var scene := runner.scene()
+	var cells: Array = scene.get("_cells")
+	var reset_button: Button = scene.get_node("%Reset")
+	scene.call("_move_selection", 0, 1)  # 0 → 3
+	scene.call("_move_selection", 0, 1)  # 3 → 6 (bottom row)
+	scene.call("_move_selection", 0, 1)  # 6 → Reset
+	assert_bool(scene.get_viewport().gui_get_focus_owner() == reset_button).is_true()
+	scene.call("_move_selection", 0, -1)  # Reset → 6 (the cell we left)
+	assert_bool(scene.get_viewport().gui_get_focus_owner() == cells[6]).is_true()
+
+
+func test_game_over_focuses_the_reset_button() -> void:
+	var runner := scene_runner(MAIN_SCENE)
+	var scene := runner.scene()
+	var reset_button: Button = scene.get_node("%Reset")
+	var cells := (scene.get_node("%Grid") as GridContainer).get_children()
+	for idx: int in [0, 3, 1, 4, 2]:  # X wins the top row
+		_press(cells, idx)
+	assert_bool(scene.get_viewport().gui_get_focus_owner() == reset_button).is_true()
