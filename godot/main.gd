@@ -7,8 +7,11 @@ extends Control
 ## docs/DESIGN_PRINCIPLES.md #2. The core emits tokens ("X"/"O"/"draw"); this
 ## view is what turns them into user-facing text and highlights.
 
+const NAV_REPEAT_SECONDS := 0.2  # cursor auto-repeat cadence while a direction is held
+
 var _cells: Array[Button] = []
 var _selected: int = 0  # cell the keyboard/gamepad cursor is on
+var _nav_cooldown: float = 0.0  # time left until the next held-direction move
 
 @onready var _board: TicTacToe = %Board
 @onready var _grid: GridContainer = %Grid
@@ -35,26 +38,49 @@ func _ready() -> void:
 	_cells[_selected].grab_focus()  # a focused cell so the first `place` has a target
 
 
-## Handle the abstract input actions here in `_input` — ahead of the GUI's
-## built-in ui_* focus navigation — so `cursor_*` drives the grid cursor and
-## `reset` always restarts. `place` activates only the focused cell and otherwise
-## falls through to the focused control (see `_place_on_focused_cell`). Mouse and
-## touch are untouched (they arrive as button presses, not these actions).
+## `reset` and `place` are discrete, so they're handled per-event here (`place`
+## activates only the focused cell and otherwise falls through to the focused
+## control — see `_place_on_focused_cell`). `cursor_*` events are only swallowed
+## here to pre-empt Godot's built-in ui_* focus navigation on these shared
+## arrow/stick/D-pad bindings; the actual movement is polled and debounced in
+## `_process`. Mouse and touch are untouched (they arrive as button presses).
 func _input(event: InputEvent) -> void:
 	if event.is_action_pressed("reset"):
 		_on_reset_pressed()
 		get_viewport().set_input_as_handled()
-		return
-	if event.is_action_pressed("place"):
+	elif event.is_action_pressed("place"):
 		_place_on_focused_cell()
-	elif event.is_action_pressed("cursor_up"):
-		_move_selection(0, -1)
-	elif event.is_action_pressed("cursor_down"):
-		_move_selection(0, 1)
-	elif event.is_action_pressed("cursor_left"):
-		_move_selection(-1, 0)
-	elif event.is_action_pressed("cursor_right"):
-		_move_selection(1, 0)
+	elif _is_cursor_event(event):
+		get_viewport().set_input_as_handled()
+
+
+## Apply held-direction movement on a fixed cadence. Polling the action state
+## (rather than reacting to each event) is what tames the analog stick: a held
+## stick/key/D-pad steps across the grid every NAV_REPEAT_SECONDS instead of
+## either moving once or spamming a move per analog motion event.
+func _process(delta: float) -> void:
+	var dx: int = (
+		int(Input.is_action_pressed("cursor_right")) - int(Input.is_action_pressed("cursor_left"))
+	)
+	var dy: int = (
+		int(Input.is_action_pressed("cursor_down")) - int(Input.is_action_pressed("cursor_up"))
+	)
+	if dx == 0 and dy == 0:
+		_nav_cooldown = 0.0  # released → the next press moves immediately
+		return
+	_nav_cooldown -= delta
+	if _nav_cooldown <= 0.0:
+		_move_selection(dx, dy)
+		_nav_cooldown = NAV_REPEAT_SECONDS
+
+
+func _is_cursor_event(event: InputEvent) -> bool:
+	return (
+		event.is_action("cursor_up")
+		or event.is_action("cursor_down")
+		or event.is_action("cursor_left")
+		or event.is_action("cursor_right")
+	)
 
 
 ## Move the cursor within the 3x3 grid (clamped at the edges) and focus that
@@ -64,7 +90,6 @@ func _move_selection(dx: int, dy: int) -> void:
 	var row: int = clampi(_selected / 3 + dy, 0, 2)
 	_selected = row * 3 + col
 	_cells[_selected].grab_focus()
-	get_viewport().set_input_as_handled()
 
 
 ## `place` activates the grid cell that currently holds focus. If focus is on
