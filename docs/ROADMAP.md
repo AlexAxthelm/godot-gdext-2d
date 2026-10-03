@@ -31,12 +31,19 @@ The complete, engine-free game.
 Milestone: `make test` covers the full rules; zero Godot dependency in `core`.
 
 ---
-## Phase 2 — Godot binding & scene (macOS)
+## Phase 2 — Godot binding & scene (macOS)  *(done)*
 First playable build.
-- `TicTacToe` root node holding a `core::Board`; `cell_changed` / `game_over` signals.
-- `main.tscn`: 3x3 button grid + status label + reset button.
+- `TicTacToe` node holding a `core::Board`; `cell_changed` / `turn_changed` /
+  `game_over` signals carrying tokens plus the winning line.
+- `main.tscn`: 3x3 button grid + status label + reset button, driven by a thin,
+  fully-typed `main.gd` view that holds no rules.
 - InputMap actions (`cursor_up/down/left/right`, `place`, `reset`); keyboard +
-  gamepad grid navigation alongside mouse/touch.
+  gamepad grid navigation alongside mouse/touch, handled in `_input` ahead of the
+  built-in `ui_*` navigation.
+- GDScript safety: static typing + warnings-as-errors + a `--check-only` parse
+  gate, `gdlint`/`gdformat` (gdtoolkit), and a headless GdUnit4 scene smoke test
+  (`make smoke`). CI wires the Godot-headless jobs in Phase 5; the gates run
+  locally now (see `HACKING.md`).
 
 Milestone: playable two-player hot-seat game in the editor and via `make run` on macOS.
 
