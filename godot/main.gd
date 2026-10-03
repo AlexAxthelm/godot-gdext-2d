@@ -12,7 +12,6 @@ const NAV_REPEAT_SECONDS := 0.2  # cursor auto-repeat cadence while a direction 
 var _cells: Array[Button] = []
 var _selected: int = 0  # cell the keyboard/gamepad cursor is on
 var _nav_cooldown: float = 0.0  # time left until the next held-direction move
-var _on_reset: bool = false  # cursor is on the Reset button (below the grid)
 
 @onready var _board: TicTacToe = %Board
 @onready var _grid: GridContainer = %Grid
@@ -32,7 +31,6 @@ func _ready() -> void:
 		_cells[i].pressed.connect(_on_cell_pressed.bind(i))
 		_cells[i].focus_entered.connect(_on_cell_focused.bind(i))
 	_reset_button.pressed.connect(_on_reset_pressed)
-	_reset_button.focus_entered.connect(_on_reset_focused)
 	_board.cell_changed.connect(_on_cell_changed)
 	_board.turn_changed.connect(_on_turn_changed)
 	_board.game_over.connect(_on_game_over)
@@ -90,7 +88,7 @@ func _is_cursor_event(event: InputEvent) -> bool:
 ## The Reset button sits just below the bottom row: moving down from any
 ## bottom-row cell focuses it, moving up from it returns to the cell we left.
 func _move_selection(dx: int, dy: int) -> void:
-	if _on_reset:
+	if get_viewport().gui_get_focus_owner() == _reset_button:
 		if dy < 0:  # up from Reset goes back to the grid cell we came from
 			_cells[_selected].grab_focus()
 		return  # left/right/further-down on Reset do nothing
@@ -117,13 +115,7 @@ func _place_on_focused_cell() -> void:
 
 
 func _on_cell_focused(idx: int) -> void:
-	# Keep the cursor in sync however focus moved (nav, mouse, code).
-	_selected = idx
-	_on_reset = false
-
-
-func _on_reset_focused() -> void:
-	_on_reset = true
+	_selected = idx  # keep the cursor in sync however focus moved (nav, mouse, code)
 
 
 func _on_cell_pressed(idx: int) -> void:
