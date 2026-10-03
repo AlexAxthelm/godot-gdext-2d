@@ -119,3 +119,14 @@ func test_play_rejects_out_of_range_indices() -> void:
 	for i: int in cells.size():
 		assert_str((cells[i] as Button).text).is_equal("")
 	assert_str(status.text).is_equal("X's turn")
+
+
+func test_full_board_with_no_winner_is_a_draw() -> void:
+	var runner := scene_runner(MAIN_SCENE)
+	var scene := runner.scene()
+	var status: Label = scene.get_node("%Status")
+	var cells := (scene.get_node("%Grid") as GridContainer).get_children()
+	# A classic drawn game (same ordering the core's draw test uses).
+	for idx: int in [0, 1, 2, 4, 3, 5, 7, 6, 8]:
+		_press(cells, idx)
+	assert_str(status.text).is_equal("Draw")
