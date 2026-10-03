@@ -50,6 +50,14 @@ impl TicTacToe {
     #[signal]
     fn game_over(outcome: GString, line: PackedInt32Array);
 
+    /// The board was cleared to a fresh game; the view should repaint every cell
+    /// to empty (text and any win highlight). Emitted by [`Self::reset`] before
+    /// the follow-up `turn_changed`, so *every* reset path — including a direct
+    /// `reset()` call from another script — refreshes the view, not only the
+    /// scene's own reset handler.
+    #[signal]
+    fn board_reset();
+
     /// Attempt to place the current player's mark at `idx`. Returns whether the
     /// move was accepted; an illegal move (out of range, occupied, or after the
     /// game is over) is a no-op the view can silently ignore.
@@ -83,6 +91,7 @@ impl TicTacToe {
     #[func]
     fn reset(&mut self) {
         self.board.reset();
+        self.signals().board_reset().emit();
         self.emit_state();
     }
 

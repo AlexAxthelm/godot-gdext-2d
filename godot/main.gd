@@ -36,6 +36,7 @@ func _ready() -> void:
 	_board.cell_changed.connect(_on_cell_changed)
 	_board.turn_changed.connect(_on_turn_changed)
 	_board.game_over.connect(_on_game_over)
+	_board.board_reset.connect(_on_board_reset)
 	_board.reset()  # broadcast the initial state (turn_changed → "X")
 	_cells[_selected].grab_focus()  # a focused cell so the first `place` has a target
 
@@ -132,9 +133,14 @@ func _on_cell_pressed(idx: int) -> void:
 
 
 func _on_reset_pressed() -> void:
-	_clear_board()
-	_board.reset()
+	_board.reset()  # clears the board + repaints via the board_reset signal
 	_cells[_selected].grab_focus()  # leave the Reset button, back to the grid
+
+
+## Repaint the whole grid to empty on any reset (including a direct reset() call
+## from elsewhere), so the view never lags the core's board state.
+func _on_board_reset() -> void:
+	_clear_board()
 
 
 func _on_cell_changed(idx: int, mark: String) -> void:

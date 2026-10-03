@@ -153,3 +153,18 @@ func test_game_over_focuses_the_reset_button() -> void:
 	for idx: int in [0, 3, 1, 4, 2]:  # X wins the top row
 		_press(cells, idx)
 	assert_bool(scene.get_viewport().gui_get_focus_owner() == reset_button).is_true()
+
+
+func test_direct_board_reset_repaints_the_view() -> void:
+	# A direct core reset() (not via the view's reset handler) must still clear
+	# marks and the win highlight, via the board_reset signal.
+	var runner := scene_runner(MAIN_SCENE)
+	var scene := runner.scene()
+	var board: TicTacToe = scene.get_node("%Board")
+	var cells := (scene.get_node("%Grid") as GridContainer).get_children()
+	for idx: int in [0, 3, 1, 4, 2]:  # X wins the top row (marks + highlight)
+		_press(cells, idx)
+	board.reset()
+	for i: int in [0, 1, 2]:
+		assert_str((cells[i] as Button).text).is_equal("")
+		assert_bool((cells[i] as Button).modulate == Color.WHITE).is_true()
